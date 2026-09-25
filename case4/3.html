@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дни до Нового года</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+        }
+
+        .container {
+            text-align: center;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            font-size: 16px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f1f1f1;
+            min-height: 20px;
+        }
+
+        .error {
+            color: #d9534f;
+            border-color: #d9534f;
+            background-color: #fdf2f2;
+        }
+        
+        button {
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎄 Новогодний калькулятор</h1>
+        <p class="subtitle">Введите дату в формате дд.мм.гггг</p>
+        
+        
+        <input type="text" id="dateInput" placeholder="например: 15.06.2026" maxlength="10">
+        <button id="calcBtn">Рассчитать</button>
+        
+        <div id="result1" class="result"></div>
+        <div id="result2" class="result"></div>
+    </div>
+
+    <script>
+       
+        const MS_IN_DAY = 1000 * 60 * 60 * 24;
+        const DECEMBER_INDEX = 11; 
+
+        
+        function isLeapYear(year) {
+            return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+        }
+
+        
+        function getDaysInMonth(month, year) {
+            return new Date(year, month, 0).getDate();
+        }
+
+        
+        function parseAndValidateDate(dateStr) {
+            
+            const regex = /^\d{2}\.\d{2}\.\d{4}$/;
+            if (!regex.test(dateStr)) {
+                throw new Error("Неверный формат. Используйте дд.мм.гггг (например, 15.06.2026).");
+            }
+
+            const parts = dateStr.split(".");
+            const day = Number(parts[0]);
+            const month = Number(parts[1]);
+            const year = Number(parts[2]);
+
+           
+            if (month < 1 || month > 12) {
+                throw new Error("Месяц должен быть в диапазоне от 01 до 12.");
+            }
+
+            
+            const daysInMonth = getDaysInMonth(month, year);
+            if (day < 1 || day > daysInMonth) {
+                throw new Error(`В указанном месяце только ${daysInMonth} дней.`);
+            }
+
+            return { 
+                day, month, year, 
+                date: new Date(year, month - 1, day) 
+            };
+        }
+
+        
+        function calculateDaysToNewYear(targetDate, year) {
+            const newYear = new Date(year, DECEMBER_INDEX, 31);
+            const diff = newYear - targetDate;
+            return Math.ceil(diff / MS_IN_DAY);
+        }
+
+        
+
+        function handleCalculate() {
+            const input = document.getElementById("dateInput");
+            const res1 = document.getElementById("result1");
+            const res2 = document.getElementById("result2");
+            
+           
+            input.style.borderColor = "";
+            res1.className = "result";
+            res2.className = "result";
+
+            try {
+                const { date, year } = parseAndValidateDate(input.value);
+                
+                const daysLeft = calculateDaysToNewYear(date, year);
+                const isLeap = isLeapYear(year);
+
+                res1.textContent = `До Нового года осталось: ${daysLeft} дней`;
+                res2.textContent = isLeap ? "Год високосный" : "Год не високосный";
+            } catch (error) {
+                
+                res1.textContent = error.message;
+                res1.classList.add("error");
+                res2.textContent = "";
+                
+                
+                input.style.borderColor = "#d9534f"; 
+            }
+        }
+
+        
+        document.addEventListener("DOMContentLoaded", () => {
+            const btn = document.getElementById("calcBtn");
+            const input = document.getElementById("dateInput");
+
+            btn.addEventListener("click", handleCalculate);
+            
+            
+            input.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                    handleCalculate();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
